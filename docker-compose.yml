@@ -1,0 +1,46 @@
+version: '3'
+
+services:
+  postgresql:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: aftas
+    ports:
+      - "5432:5432"
+    networks:
+      - aftas-network
+    restart: unless-stopped
+
+  spring-app:
+    build:
+      context: ./AFTAS
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgresql
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql:5432/aftas
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+    networks:
+      - aftas-network
+    restart: unless-stopped
+
+  angular-app:
+    build:
+      context: ./Aftas-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "4200:80"
+    depends_on:
+      - spring-app
+    networks:
+      - aftas-network
+    restart: unless-stopped
+
+networks:
+  aftas-network:
+    driver: bridge
